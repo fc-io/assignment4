@@ -1,15 +1,36 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import ArticleComponent from './Article'
+import ArticleC from './Article'
+import { Puff as PuffComponet } from './Article'
 import { Puff } from 'react-loader-spinner'
+import fetchQL from './fetchQL'
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [articles, setArticles] = useState([])
 
   useEffect(() => {
-    fetch('https://api.spaceflightnewsapi.net/v3/articles')
-      .then((response) => {
+    fetchQL(`
+      {
+        countries(page: {first: 4}){
+          edges {
+            node {
+              name
+              id
+              capital
+              cities(page:{first: 3}) {
+                edges{
+                  node {
+                    id
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `).then((response) => {
         return response.json()
       })
       .then((data) => {
@@ -24,8 +45,13 @@ function App() {
       {
         isLoading ?
         <Puff /> :
-        articles.map((article) => {
-          return <ArticleComponent key={article.id} {...article}></ArticleComponent>
+          articles.data.countries.edges.map((article) => {
+            console.log(article.node)
+            if (!article.node) {
+            debugger
+
+          }
+          return <ArticleComponent key={article.node.id} {...article.node}></ArticleComponent>
         })
       }
     </div>
